@@ -147,10 +147,10 @@ const profile = {
     if (!state.supplier) return;
     
     const { data: quotes, error } = await db
-      .from('quotes')
+      .from('inquiry_quotes')
       .select(`
         *,
-        inquiry:inquiries(id, product_name, category, buyer_display_name, is_anonymous, status)
+        inquiry:inquiries(id, product_name, category, buyer_display_name, buyer_name, is_anonymous, status)
       `)
       .eq('supplier_id', state.supplier.id)
       .order('created_at', { ascending: false });
@@ -180,10 +180,10 @@ const profile = {
       const status = statusMap[q.status] || statusMap.pending;
       const buyerName = inquiry.is_anonymous 
         ? (inquiry.buyer_display_name || '匿名品牌方')
-        : (inquiry.buyer_display_name || '品牌方');
+        : (inquiry.buyer_name || '品牌方');
       
       return `
-        <div class="quote-history-item" onclick="profile.showQuoteDetail('${q.id}')">
+        <div class="quote-history-item">
           <div class="quote-history-header">
             <span class="quote-status-badge" style="background:${status.color}20;color:${status.color};">
               ${status.icon} ${status.label}
@@ -199,7 +199,7 @@ const profile = {
             </div>
           </div>
           <div class="quote-history-footer">
-            <span class="quote-price">¥${parseFloat(q.unit_price).toFixed(2)}/件</span>
+            <span class="quote-price">¥${parseFloat(q.price).toFixed(2)}/件</span>
             <span class="quote-moq">MOQ: ${q.moq || '-'}件</span>
           </div>
         </div>
@@ -216,10 +216,9 @@ const profile = {
   async loadStats() {
     if (!state.supplier) return;
     
-    // 获取报价统计
     const { data: quotes, error } = await db
-      .from('quotes')
-      .select('id, status, created_at, unit_price')
+      .from('inquiry_quotes')
+      .select('id, status, created_at, price')
       .eq('supplier_id', state.supplier.id);
     
     if (error) {
