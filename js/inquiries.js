@@ -17,10 +17,14 @@ const inquiries = {
   },
 
   render() {
-    const html = this.allInquiries.length ? this.allInquiries.map(i => `
+    const html = this.allInquiries.length ? this.allInquiries.map(i => {
+      const displayName = i.is_anonymous ? (i.buyer_display_name || '匿名品牌方') : i.buyer_name;
+      const anonymousBadge = i.is_anonymous ? '<span class="inquiry-badge" style="background:var(--gold);color:white;margin-left:8px;">匿名</span>' : '';
+      return `
       <div class="inquiry-card">
         <div class="inquiry-header">
-          <span class="inquiry-buyer">${i.buyer_name}</span>
+          <span class="inquiry-buyer">${displayName}</span>
+          ${anonymousBadge}
           <span class="inquiry-badge">${i.status === 'open' ? '进行中' : '已截止'}</span>
         </div>
         <div class="inquiry-product">${i.product_name}</div>
@@ -35,7 +39,7 @@ const inquiries = {
           <button class="btn btn-outline btn-sm" onclick="inquiries.showDetail('${i.id}')">详情</button>
         </div>
       </div>
-    `).join('') : '<div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">暂无新询盘</div></div>';
+    `}).join('') : '<div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">暂无新询盘</div></div>';
 
     document.getElementById('inquiries-list').innerHTML = html;
   },
@@ -43,8 +47,9 @@ const inquiries = {
   showQuote(inquiryId) {
     const inquiry = this.allInquiries.find(i => i.id === inquiryId);
     if (!inquiry) return;
+    const displayName = inquiry.is_anonymous ? (inquiry.buyer_display_name || '匿名品牌方') : inquiry.buyer_name;
     document.getElementById('quote-inquiry-id').value = inquiryId;
-    document.getElementById('quote-inquiry-info').textContent = `${inquiry.buyer_name} · ${inquiry.product_name} · ${inquiry.quantity}${inquiry.unit}`;
+    document.getElementById('quote-inquiry-info').textContent = `${displayName} · ${inquiry.product_name} · ${inquiry.quantity}${inquiry.unit}`;
     document.getElementById('quote-price').value = '';
     document.getElementById('quote-moq').value = '';
     document.getElementById('quote-lead-time').value = '';
@@ -82,10 +87,15 @@ const inquiries = {
   showDetail(inquiryId) {
     const i = this.allInquiries.find(item => item.id === inquiryId);
     if (!i) return;
+    const displayName = i.is_anonymous ? (i.buyer_display_name || '匿名品牌方') : i.buyer_name;
+    const contactInfo = i.is_anonymous ? '报价后可查看联系方式' : (i.buyer_contact || '未留联系方式');
     let html = `
       <div style="margin-bottom:16px;">
-        <div style="font-size:18px;font-weight:700;margin-bottom:4px;">${i.buyer_name}</div>
-        <div style="font-size:13px;color:var(--text-secondary);">${i.buyer_contact || '未留联系方式'}</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:4px;">
+          ${displayName}
+          ${i.is_anonymous ? '<span style="font-size:12px;background:var(--gold);color:white;padding:2px 8px;border-radius:4px;margin-left:8px;">匿名</span>' : ''}
+        </div>
+        <div style="font-size:13px;color:var(--text-secondary);">${contactInfo}</div>
       </div>
       <div class="info-row"><span class="info-label">需求产品</span><span class="info-value">${i.product_name}</span></div>
       <div class="info-row"><span class="info-label">品类</span><span class="info-value">${i.category}</span></div>
