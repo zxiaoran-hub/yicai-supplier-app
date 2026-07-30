@@ -30,6 +30,12 @@ const profile = {
       ? '<span class="badge badge-success">✅ 已认证</span>'
       : '<span class="badge badge-warning">⏳ 待认证</span>';
 
+    // 账号设置 - 显示邮箱
+    const emailEl = document.getElementById('settings-email');
+    if (emailEl && state.user) {
+      emailEl.textContent = state.user.email;
+    }
+
     // 工厂照片
     const photos = s.factory_photos || [];
     const photosHtml = photos.map(url => `
@@ -133,6 +139,161 @@ const profile = {
       this.load();
     } catch (e) {
       showToast('保存失败: ' + e.message);
+    }
+  },
+
+  // ===== 我的报价历史 =====
+  async loadMyQuotes() {
+    if (!state.supplier) return;
+    
+    const { data: quotes, error } = await db
+      .from('quotes')
+      .select(`
+        *,
+        inquiry:inquiries(id, product_name, category, buyer_display_name, is_anonymous, status)
+      `)
+      .eq('supplier_id', state.supplier.id)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('加载报价历史失败:', error);
+      return;
+    }
+    
+    const container = document.getElementById('my-quotes-list');
+    if (!container) return;
+    
+    if (!quotes || quotes.length === 0) {
+      container.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div>暂无报价记录</div></div>';
+      return;
+    }
+    
+    const statusMap = {
+      pending: { label: '待审核', color: '#f59e0b', icon: '⏳' },
+      accepted: { label: '已中标', color: '#10b981', icon: '✅' },
+      rejected: { label: '未中标', color: '#6b7280', icon: '❌' },
+      withdrawn: { label: '已撤回', color: '#9ca3af', icon: '↩️' }
+    };
+    
+    container.innerHTML = quotes.map(q => {
+      const inquiry = q.inquiry || {};
+      const status = statusMap[q.status] || statusMap.pending;
+      const buyerName = inquiry.is_anonymous 
+        ? (inquiry.buyer_display_name || '匿名品牌方')
+        : (inquiry.buyer_display_name || '品牌方');
+      
+      return `
+        <div class="quote-history-item" onclick="profile.showQuoteDetail('${q.id}')">
+          <div class="quote-history-header">
+            <span class="quote-status-badge" style="background:${status.color}20;color:${status.color};">
+              ${status.icon} ${status.label}
+            </span>
+            <span class="quote-time">${new Date(q.created_at).toLocaleDateString('zh-CN')}</span>
+          </div>
+          <div class="quote-history-body">
+            <div class="quote-product-name">${inquiry.product_name || '-'}</div>
+            <div class="quote-meta">
+              <span>${inquiry.category || '-'}</span>
+              <span>·</span>
+              <span>${buyerName}</span>
+            </div>
+          </div>
+          <div class="quote-history-footer">
+            <span class="quote-price">¥${parseFloat(q.unit_price).toFixed(2)}/件</span>
+            <span class="quote-moq">MOQ: ${q.moq || '-'}件</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  showQuoteDetail(quoteId) {
+    // TODO: 实现报价详情弹窗
+    showToast('报价详情功能开发中');
+  },
+
+  // ===== 数据统计 =====
+  async loadStats() {
+    if (!state.supplier) return;
+    
+    // 获取报价统计
+    const { data: quotes, error } = await db
+      .from('quotes')
+      .select('id, status, created_at, unit_price')
+      .eq('supplier_id', state.supplier.id);
+    
+    if (error) {
+      console.error('加载统计失败:', error);
+      return;
+    }
+    
+    const totalQuotes = quotes?.length || 0;
+    const acceptedQuotes = quotes?.filter(q => q.status === 'accepted').length || 0;
+    const pendingQuotes = quotes?.filter(q => q.status === 'pending').length || 0;
+    const winRate = totalQuotes > 0 ? ((acceptedQuotes / totalQuotes) * 100).toFixed(1) : 0;
+    
+    // 更新统计卡片
+    const statTotalEl = document.getElementById('stat-total-quotes');
+    const statPendingEl = document.getElementById('stat-pending-quotes');
+    const statWonEl = document.getElementById('stat-won-quotes');
+    const statWinRateEl = document.getElementById('stat-win-rate');
+    
+    if (statTotalEl) statTotalEl.textContent = totalQuotes;
+    if (statPendingEl) statPendingEl.textContent = pendingQuotes;
+    if (statWonEl) statWonEl.textContent = acceptedQuotes;
+    if (statWinRateEl) statWinRateEl.textContent = winRate + '%';
+  },
+
+  // ===== 账号设置 =====
+  showAccountSettings() {
+    showModal('account-settings-modal');
+  },
+
+  async changePassword() {
+    const newPassword = document.getElementById('new-password').value;
+    const confirmPassword = document.getElementById('confirm-password').value;
+    
+    if (!newPassword || !confirmPassword) {
+      showToast('请填写完整信息');
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      showToast('两次密码不一致');
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      showToast('新密码至少6位');
+      return;
+    }
+    
+    try {
+      const { error } = await db.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      
+      showToast('密码修改成功 ✅');
+      hideModal('account-settings-modal');
+      
+      document.getElementById('new-password').value = '';
+      document.getElementById('confirm-password').value = '';
+    } catch (e) {
+      showToast('修改失败: ' + e.message);
+    }
+  },
+
+  // ===== 切换个人中心子标签 =====
+  switchProfileTab(tab) {
+    document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    
+    document.querySelectorAll('.profile-tab-content').forEach(c => c.style.display = 'none');
+    document.getElementById('profile-tab-' + tab).style.display = 'block';
+    
+    if (tab === 'quotes') {
+      this.loadMyQuotes();
+    } else if (tab === 'stats') {
+      this.loadStats();
     }
   }
 };

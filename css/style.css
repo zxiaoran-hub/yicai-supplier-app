@@ -554,6 +554,105 @@ img { max-width: 100%; display: block; }
 }
 .toast.show { transform: translateX(-50%) translateY(0); }
 
+/* ===== Profile Sub-Tabs ===== */
+.profile-tabs {
+  display: flex;
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 4px;
+  margin: 16px;
+  gap: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.profile-tab {
+  flex: 1;
+  text-align: center;
+  padding: 8px 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.profile-tab.active {
+  background: var(--primary);
+  color: white;
+  font-weight: 600;
+}
+
+/* ===== Quote History Items ===== */
+.quote-history-item {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 0 16px 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.quote-history-item:active {
+  transform: scale(0.98);
+}
+.quote-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.quote-status-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.quote-time {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.quote-history-body {
+  margin-bottom: 8px;
+}
+.quote-product-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--dark);
+  margin-bottom: 4px;
+}
+.quote-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  gap: 6px;
+}
+.quote-history-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.quote-price {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+}
+.quote-moq {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ===== Empty State ===== */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-secondary);
+}
+.empty-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
 /* ===== Responsive ===== */
 @media (min-width: 768px) {
   body { max-width: 500px; margin: 0 auto; }

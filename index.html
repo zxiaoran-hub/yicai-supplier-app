@@ -67,7 +67,6 @@
   <!-- Header -->
   <div class="app-header">
     <h1>异采 · 供应商</h1>
-    <span class="header-user" onclick="if(confirm('确定退出登录？')) auth.signOut()">退出</span>
   </div>
 
   <!-- ===== 工作台 ===== -->
@@ -135,8 +134,9 @@
     <div id="inquiries-list"></div>
   </div>
 
-  <!-- ===== 我的主页 ===== -->
+  <!-- ===== 个人中心 ===== -->
   <div id="page-profile" class="page">
+    <!-- 顶部用户卡片 -->
     <div class="profile-header">
       <div class="profile-avatar"><span id="profile-avatar-text">供</span></div>
       <div class="profile-name" id="profile-company-name">-</div>
@@ -144,35 +144,100 @@
       <div class="profile-tags" id="profile-tags"></div>
     </div>
 
-    <div class="profile-section">
-      <h3>🏢 企业信息 <span id="info-verified" style="float:right;"></span></h3>
-      <div class="info-row"><span class="info-label">成立年份</span><span class="info-value" id="info-established">-</span></div>
-      <div class="info-row"><span class="info-label">员工人数</span><span class="info-value" id="info-employees">-</span></div>
-      <div class="info-row"><span class="info-label">工厂面积</span><span class="info-value" id="info-area">-</span></div>
-      <div class="info-row"><span class="info-label">所在地区</span><span class="info-value" id="info-region">-</span></div>
-      <div class="info-row"><span class="info-label">详细地址</span><span class="info-value" id="info-address">-</span></div>
-      <div style="margin-top:8px;">
-        <div style="font-size:13px;color:var(--text-secondary);margin-bottom:4px;">企业简介</div>
-        <div style="font-size:13px;" id="info-desc">-</div>
+    <!-- 子标签导航 -->
+    <div class="profile-tabs">
+      <div class="profile-tab active" onclick="profile.switchProfileTab('info')">企业档案</div>
+      <div class="profile-tab" onclick="profile.switchProfileTab('quotes')">我的报价</div>
+      <div class="profile-tab" onclick="profile.switchProfileTab('stats')">数据统计</div>
+      <div class="profile-tab" onclick="profile.switchProfileTab('settings')">账号设置</div>
+    </div>
+
+    <!-- Tab: 企业档案 -->
+    <div id="profile-tab-info" class="profile-tab-content" style="display:block;">
+      <div class="profile-section">
+        <h3>🏢 企业信息 <span id="info-verified" style="float:right;"></span></h3>
+        <div class="info-row"><span class="info-label">成立年份</span><span class="info-value" id="info-established">-</span></div>
+        <div class="info-row"><span class="info-label">员工人数</span><span class="info-value" id="info-employees">-</span></div>
+        <div class="info-row"><span class="info-label">工厂面积</span><span class="info-value" id="info-area">-</span></div>
+        <div class="info-row"><span class="info-label">所在地区</span><span class="info-value" id="info-region">-</span></div>
+        <div class="info-row"><span class="info-label">详细地址</span><span class="info-value" id="info-address">-</span></div>
+        <div style="margin-top:8px;">
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:4px;">企业简介</div>
+          <div style="font-size:13px;" id="info-desc">-</div>
+        </div>
+        <button class="btn btn-outline btn-sm mt-16" onclick="profile.showEditForm()">编辑信息</button>
       </div>
-      <button class="btn btn-outline btn-sm mt-16" onclick="profile.showEditForm()">编辑信息</button>
+
+      <div class="profile-section">
+        <h3>📸 工厂实拍</h3>
+        <div class="photo-grid" id="factory-photos"></div>
+      </div>
+
+      <div class="profile-section">
+        <h3>📜 资质证书</h3>
+        <div class="photo-grid" id="cert-images"></div>
+      </div>
+
+      <div class="profile-section">
+        <h3>📞 联系方式</h3>
+        <div class="info-row"><span class="info-label">联系人</span><span class="info-value" id="info-contact-name">-</span></div>
+        <div class="info-row"><span class="info-label">电话</span><span class="info-value" id="info-contact-phone">-</span></div>
+        <div class="info-row"><span class="info-label">邮箱</span><span class="info-value" id="info-contact-email">-</span></div>
+      </div>
     </div>
 
-    <div class="profile-section">
-      <h3>📸 工厂实拍</h3>
-      <div class="photo-grid" id="factory-photos"></div>
+    <!-- Tab: 我的报价 -->
+    <div id="profile-tab-quotes" class="profile-tab-content" style="display:none;">
+      <div id="my-quotes-list"></div>
     </div>
 
-    <div class="profile-section">
-      <h3>📜 资质证书</h3>
-      <div class="photo-grid" id="cert-images"></div>
+    <!-- Tab: 数据统计 -->
+    <div id="profile-tab-stats" class="profile-tab-content" style="display:none;">
+      <div class="stats-grid" style="margin-top:16px;">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-total-quotes">0</div>
+          <div class="stat-label">累计报价</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-pending-quotes">0</div>
+          <div class="stat-label">待审核</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-won-quotes">0</div>
+          <div class="stat-label">已中标</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-win-rate">0%</div>
+          <div class="stat-label">中标率</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <div class="card-title">📊 数据说明</div>
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+          <div>• 累计报价：您在平台上提交的所有报价数量</div>
+          <div>• 待审核：品牌方尚未做出决定的报价</div>
+          <div>• 已中标：品牌方选中的报价，可进入订单环节</div>
+          <div>• 中标率：已中标 / 累计报价 × 100%</div>
+        </div>
+      </div>
     </div>
 
-    <div class="profile-section">
-      <h3>📞 联系方式</h3>
-      <div class="info-row"><span class="info-label">联系人</span><span class="info-value" id="info-contact-name">-</span></div>
-      <div class="info-row"><span class="info-label">电话</span><span class="info-value" id="info-contact-phone">-</span></div>
-      <div class="info-row"><span class="info-label">邮箱</span><span class="info-value" id="info-contact-email">-</span></div>
+    <!-- Tab: 账号设置 -->
+    <div id="profile-tab-settings" class="profile-tab-content" style="display:none;">
+      <div class="profile-section">
+        <h3>🔐 账号安全</h3>
+        <div class="info-row"><span class="info-label">登录邮箱</span><span class="info-value" id="settings-email">-</span></div>
+        <button class="btn btn-outline btn-sm mt-16" onclick="profile.showAccountSettings()">修改密码</button>
+      </div>
+      <div class="profile-section">
+        <h3>📱 关于</h3>
+        <div class="info-row"><span class="info-label">平台</span><span class="info-value">异采 YiCai</span></div>
+        <div class="info-row"><span class="info-label">版本</span><span class="info-value">v1.1</span></div>
+        <div class="info-row"><span class="info-label">终端</span><span class="info-value">供应商端 Web App</span></div>
+      </div>
+      <div class="profile-section">
+        <button class="btn btn-outline btn-block" style="color:var(--danger);border-color:var(--danger);" onclick="if(confirm('确定退出登录？')) auth.signOut()">退出登录</button>
+      </div>
     </div>
   </div>
 
@@ -414,6 +479,25 @@
       <input type="email" id="edit-contact-email" class="form-input">
     </div>
     <button class="btn btn-primary btn-block mt-16" onclick="profile.saveProfile()">保存</button>
+  </div>
+</div>
+
+<!-- 修改密码 -->
+<div id="account-settings-modal" class="modal-overlay" onclick="if(event.target===this)hideModal('account-settings-modal')">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">修改密码</div>
+      <button class="modal-close" onclick="hideModal('account-settings-modal')">×</button>
+    </div>
+    <div class="form-group">
+      <label>新密码</label>
+      <input type="password" id="new-password" class="form-input" placeholder="至少6位" required minlength="6">
+    </div>
+    <div class="form-group">
+      <label>确认新密码</label>
+      <input type="password" id="confirm-password" class="form-input" placeholder="再次输入新密码" required minlength="6">
+    </div>
+    <button class="btn btn-primary btn-block mt-16" onclick="profile.changePassword()">确认修改</button>
   </div>
 </div>
 
